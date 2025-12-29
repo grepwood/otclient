@@ -37,7 +37,7 @@
 #include <framework/net/packet_player.h>
 #include <framework/net/packet_recorder.h>
 
-extern asio::io_service g_ioService;
+extern asio::io_context g_ioContext;
 
 Protocol::Protocol() :m_inputMessage(std::make_shared<InputMessage>()) {
     inflateInit2(&m_zstream, -15);
@@ -393,7 +393,7 @@ void Protocol::onProxyPacket(const std::shared_ptr<std::vector<uint8_t>>& packet
     if (m_disconnected)
         return;
     auto self(asProtocol());
-    post(g_ioService, [&, packet] {
+    post(g_ioContext, [&, packet] {
         if (m_disconnected)
             return;
         m_inputMessage->reset();
@@ -420,7 +420,7 @@ void Protocol::onLocalDisconnected(std::error_code ec)
         return;
     auto self(asProtocol());
     #ifndef __EMSCRIPTEN__
-    post(g_ioService, [&, ec] {
+    post(g_ioContext, [&, ec] {
         if (m_disconnected)
             return;
         m_disconnected = true;
@@ -435,7 +435,7 @@ void Protocol::onPlayerPacket(const std::shared_ptr<std::vector<uint8_t>>& packe
         return;
     auto self(asProtocol());
     #ifndef __EMSCRIPTEN__
-    post(g_ioService, [&, packet] {
+    post(g_ioContext, [&, packet] {
         if (m_disconnected)
             return;
         m_inputMessage->reset();
